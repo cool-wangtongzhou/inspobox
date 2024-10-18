@@ -17,10 +17,11 @@ import (
 )
 
 func main() {
-	db := initDB()
-	server := initWebServer()
-	initUser(server, db)
-	server.Run(":8080")
+	db := initDB()            // 先初始化DB
+	server := initWebServer() // 再初始化server
+	u := initUser(db)         // 初始化一下User的Handler
+	u.RegisterRoutes(server)  // User的Handler注册一下路由
+	server.Run(":8080")       // 最后启动
 }
 
 func initDB() *gorm.DB {
@@ -75,10 +76,10 @@ func initWebServer() *gin.Engine {
 	return server
 }
 
-func initUser(server *gin.Engine, db *gorm.DB) {
+func initUser(db *gorm.DB) *web.UserHandler {
 	ud := dao.NewUserDAO(db)
 	ur := repository.NewUserRepository(ud)
 	us := service.NewUserService(ur)
 	c := web.NewUserHandler(us)
-	c.RegisterRoutes(server)
+	return c
 }
